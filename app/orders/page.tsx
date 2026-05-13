@@ -35,6 +35,18 @@ export default function OrdersPage() {
     }
   }
 
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr)
+      return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+    } catch {
+      return dateStr
+    }
+  }
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
+
   if (!mounted) {
     return <div className="container mx-auto px-4 py-8">Loading...</div>
   }
@@ -45,7 +57,7 @@ export default function OrdersPage() {
         <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
         <h1 className="text-2xl font-bold mb-2">No orders yet</h1>
         <p className="text-muted-foreground mb-6">Start shopping to see your orders here.</p>
-        <Link href="/products">
+        <Link href="/products" aria-label="Browse products">
           <Button>Browse Products</Button>
         </Link>
       </div>
@@ -58,15 +70,15 @@ export default function OrdersPage() {
 
       <div className="space-y-4">
         {orders.map((order) => (
-          <Card key={order.id}>
+          <Card key={order.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <CardTitle className="text-lg">Order #{order.id}</CardTitle>
                 <div className="flex items-center gap-3">
-                  <Badge className={getStatusColor(order.status)}>
+                  <Badge className={`${getStatusColor(order.status)} px-2 py-1 rounded`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">{order.date}</span>
+                  <span className="text-sm text-muted-foreground">{formatDate(order.date)}</span>
                 </div>
               </div>
             </CardHeader>
@@ -78,7 +90,7 @@ export default function OrdersPage() {
                     {order.items.map((item) => (
                       <li key={item.product.id} className="flex justify-between">
                         <span>{item.product.name} x {item.quantity}</span>
-                        <span>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span>
+                        <span>{formatCurrency(item.product.price * item.quantity)}</span>
                       </li>
                     ))}
                   </ul>
@@ -90,8 +102,17 @@ export default function OrdersPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="font-bold">₹{order.total.toLocaleString('en-IN')}</p>
+                    <p className="font-bold">{formatCurrency(order.total)}</p>
                   </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Link href={`/orders/${order.id}`} aria-label={`View details for order ${order.id}`}>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                      View details
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>
